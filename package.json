@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "scripts": {
+    "dev": "concurrently -c \"yellow,blue\" \"npm run frontend\" \"npm run server\"",
+    "frontend": "cd frontend && npm run dev",
+    "server": "cd server && npm run dev"
+  }
+}
