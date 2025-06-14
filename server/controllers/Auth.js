@@ -262,7 +262,6 @@ exports.changePassword = async(req,res)=>{
      })
    }
 
-  
 
     // Return success response
     return res
