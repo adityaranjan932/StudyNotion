@@ -4,13 +4,17 @@ const User = require("../models/User");
 
 
 //auth
-exports.auth = async(req,res,next) =>{
-    try{
-        //extract the jwt from request cookies, body and  header 
+exports.auth = async(req,res,next) =>{    try{        //extract the jwt from request cookies, body and  header 
         const token = 
         req.cookies.token ||
         req.body.token ||
-        req.header("Authorization").replace("Bearer","");
+        (req.header("Authorization") && req.header("Authorization").replace("Bearer ", ""));
+
+        console.log("Token extraction debug:");
+        console.log("req.cookies.token:", req.cookies.token);
+        console.log("req.body.token:", req.body.token);
+        console.log("Authorization header:", req.header("Authorization"));
+        console.log("Final token:", token);
 
         //if jwt is missing,return 401
         if(!token){

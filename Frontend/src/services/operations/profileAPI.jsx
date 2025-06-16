@@ -35,18 +35,27 @@ export function getUserDetails(token, navigate) {
 }
 
 export async function getUserEnrolledCourses(token) {
+  // Don't show loading toast if no token
+  if (!token) {
+    console.log("No token provided to getUserEnrolledCourses");
+    return [];
+  }
+  
   const toastId = toast.loading("Loading...")
   let result = []
   try {
     console.log("BEFORE Calling BACKEND API FOR ENROLLED COURSES");
+    console.log("Token being sent:", token);
+    console.log("Token type:", typeof token);
+    console.log("Token length:", token ? token.length : 'null');
+    
     const response = await apiConnector(
       "GET",
       GET_USER_ENROLLED_COURSES_API,
       null,
       {
         Authorization: `Bearer ${token}`,
-      }
-    )
+      }    )
     console.log("AFTER Calling BACKEND API FOR ENROLLED COURSES");
     // console.log(
     //   "GET_USER_ENROLLED_COURSES_API API RESPONSE............",

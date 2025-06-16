@@ -9,20 +9,26 @@ import { getUserEnrolledCourses } from "../../../services/operations/profileAPI"
 export default function EnrolledCourses() {
   const { token } = useSelector((state) => state.auth)
   const navigate = useNavigate()
-
   const [enrolledCourses, setEnrolledCourses] = useState(null)
   const getEnrolledCourses = async () => {
+    // Check if token exists before making API call
+    if (!token) {
+      console.log("No token found, user not authenticated");
+      return;
+    }
+    
     try {
+      console.log("Token from Redux store:", token);
       const res = await getUserEnrolledCourses(token);
 
       setEnrolledCourses(res);
     } catch (error) {
-      console.log("Could not fetch enrolled courses.")
+      console.log("Could not fetch enrolled courses.", error)
     }
   };
   useEffect(() => {
     getEnrolledCourses();
-  }, [])
+  }, [token]) // Add token as dependency
 
   return (
     <>
