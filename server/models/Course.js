@@ -60,4 +60,4 @@ const courseSchema = new mongoose.Schema({
 });
 
 // Export the Courses model
-module.exports = mongoose.model("Course", courseSchema);
+module.exports = mongoose.models.Course || mongoose.model("Course", courseSchema);
