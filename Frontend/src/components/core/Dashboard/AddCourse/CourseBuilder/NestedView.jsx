@@ -17,15 +17,13 @@ import SubSectionModal from "./SubSectionModal"
 export default function NestedView({ handleChangeEditSectionName }) {
   const { course } = useSelector((state) => state.course)
   const { token } = useSelector((state) => state.auth)
-  const dispatch = useDispatch()
-  // States to keep track of mode of modal [add, view, edit]
-  const [addSubSection, setAddSubsection] = useState(null)
+  const dispatch = useDispatch()  // States to keep track of mode of modal [add, view, edit]
+  const [addSubSection, setAddSubSection] = useState(null)
   const [viewSubSection, setViewSubSection] = useState(null)
   const [editSubSection, setEditSubSection] = useState(null)
   // to keep track of confirmation modal
   const [confirmationModal, setConfirmationModal] = useState(null)
-
-  const handleDeleleSection = async (sectionId) => {
+  const handleDeleteSection = async (sectionId) => {
     const result = await deleteSection({
       sectionId,
       courseId: course._id,
@@ -85,7 +83,7 @@ export default function NestedView({ handleChangeEditSectionName }) {
                       text2: "All the lectures in this section will be deleted",
                       btn1Text: "Delete",
                       btn2Text: "Cancel",
-                      btn1Handler: () => handleDeleleSection(section._id),
+                      btn1Handler: () => handleDeleteSection(section._id),
                       btn2Handler: () => setConfirmationModal(null),
                     })
                   }
@@ -95,10 +93,9 @@ export default function NestedView({ handleChangeEditSectionName }) {
                 <span className="font-medium text-richblack-300">|</span>
                 <AiFillCaretDown className={`text-xl text-richblack-300`} />
               </div>
-            </summary>
-            <div className="px-6 pb-4">
+            </summary>            <div className="px-6 pb-4">
               {/* Render All Sub Sections Within a Section */}
-              {section.subSection.map((data) => (
+              {section.subSection && section.subSection.map((data) => (
                 <div
                   key={data?._id}
                   onClick={() => setViewSubSection(data)}
@@ -138,10 +135,9 @@ export default function NestedView({ handleChangeEditSectionName }) {
                     </button>
                   </div>
                 </div>
-              ))}
-              {/* Add New Lecture to Section */}
+              ))}              {/* Add New Lecture to Section */}
               <button
-                onClick={() => setAddSubsection(section._id)}
+                onClick={() => setAddSubSection(section._id)}
                 className="mt-3 flex items-center gap-x-1 text-yellow-50"
               >
                 <FaPlus className="text-lg" />
@@ -150,12 +146,11 @@ export default function NestedView({ handleChangeEditSectionName }) {
             </div>
           </details>
         ))}
-      </div>
-      {/* Modal Display */}
+      </div>      {/* Modal Display */}
       {addSubSection ? (
         <SubSectionModal
           modalData={addSubSection}
-          setModalData={setAddSubsection}
+          setModalData={setAddSubSection}
           add={true}
         />
       ) : viewSubSection ? (

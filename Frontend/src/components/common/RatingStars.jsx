@@ -11,13 +11,15 @@ function RatingStars({ Review_Count, Star_Size }) {
     half: 0,
     empty: 0,
   })
-
   useEffect(() => {
-    const wholeStars = Math.floor(Review_Count) || 0
+    // Ensure Review_Count is a valid number
+    const validReviewCount = typeof Review_Count === 'number' && !isNaN(Review_Count) ? Review_Count : 0
+    const wholeStars = Math.floor(validReviewCount)
+    
     SetStarCount({
       full: wholeStars,
-      half: Number.isInteger(Review_Count) ? 0 : 1,
-      empty: Number.isInteger(Review_Count) ? 5 - wholeStars : 4 - wholeStars,
+      half: Number.isInteger(validReviewCount) ? 0 : 1,
+      empty: Number.isInteger(validReviewCount) ? 5 - wholeStars : 4 - wholeStars,
     })
   }, [Review_Count])
   return (

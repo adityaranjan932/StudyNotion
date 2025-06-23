@@ -10,12 +10,6 @@ exports.auth = async(req,res,next) =>{    try{        //extract the jwt from req
         req.body.token ||
         (req.header("Authorization") && req.header("Authorization").replace("Bearer ", ""));
 
-        console.log("Token extraction debug:");
-        console.log("req.cookies.token:", req.cookies.token);
-        console.log("req.body.token:", req.body.token);
-        console.log("Authorization header:", req.header("Authorization"));
-        console.log("Final token:", token);
-
         //if jwt is missing,return 401
         if(!token){
             return res.status(401).json({

@@ -118,8 +118,7 @@ export default function SubSectionModal({
       )
       const updatedCourse = { ...course, courseContent: updatedCourseContent }
       dispatch(setCourse(updatedCourse))
-    }
-    setModalData(null)
+    }    setModalData(null)
     setLoading(false)
   }
 

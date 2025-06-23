@@ -22,7 +22,6 @@ export default function Upload({
     viewData ? viewData : editData ? editData : ""
   )
   const inputRef = useRef(null)
-
   const onDrop = (acceptedFiles) => {
     const file = acceptedFiles[0]
     if (file) {
@@ -30,13 +29,26 @@ export default function Upload({
       setSelectedFile(file)
     }
   }
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: !video
       ? { "image/*": [".jpeg", ".jpg", ".png"] }
       : { "video/*": [".mp4"] },
-    onDrop,
-  })
+    onDrop,    multiple: false,
+    noClick: true, // Disable default click to handle manually
+    noKeyboard: false,
+  })  // Manual file selection handler
+  const handleFileSelect = () => {
+    if (inputRef.current) {
+      inputRef.current.click()
+    }
+  }
+  // Handle manual file input change
+  const handleFileChange = (event) => {
+    const files = event.target.files
+    if (files && files.length > 0) {
+      onDrop(Array.from(files))
+    }
+  }
 
   const previewFile = (file) => {
     // console.log(file)
@@ -61,11 +73,12 @@ export default function Upload({
     <div className="flex flex-col space-y-2">
       <label className="text-sm text-richblack-5" htmlFor={name}>
         {label} {!viewData && <sup className="text-pink-200">*</sup>}
-      </label>
-      <div
+      </label>      <div
+        {...getRootProps()}
         className={`${
           isDragActive ? "bg-richblack-600" : "bg-richblack-700"
         } flex min-h-[250px] cursor-pointer items-center justify-center rounded-md border-2 border-dotted border-richblack-500`}
+        onClick={handleFileSelect}
       >
         {previewSource ? (
           <div className="flex w-full flex-col p-6">
@@ -78,10 +91,10 @@ export default function Upload({
             ) : (
               <Player aspectRatio="16:9" playsInline src={previewSource} />
             )}
-            {!viewData && (
-              <button
+            {!viewData && (              <button
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation()
                   setPreviewSource("")
                   setSelectedFile(null)
                   setValue(name, null)
@@ -91,17 +104,20 @@ export default function Upload({
                 Cancel
               </button>
             )}
-          </div>
-        ) : (
-          <div
+          </div>        ) : (          <div
             className="flex w-full flex-col items-center p-6"
-            {...getRootProps()}
           >
-            <input {...getInputProps()} ref={inputRef} />
+            <input {...getInputProps()} />
+            <input
+              type="file"
+              ref={inputRef}
+              onChange={handleFileChange}
+              accept={!video ? "image/*" : "video/*"}
+              style={{ display: 'none' }}
+            />
             <div className="grid aspect-square w-14 place-items-center rounded-full bg-pure-greys-800">
               <FiUploadCloud className="text-2xl text-yellow-50" />
-            </div>
-            <p className="mt-2 max-w-[200px] text-center text-sm text-richblack-200">
+            </div>            <p className="mt-2 max-w-[200px] text-center text-sm text-richblack-200">
               Drag and drop an {!video ? "image" : "video"}, or click to{" "}
               <span className="font-semibold text-yellow-50">Browse</span> a
               file

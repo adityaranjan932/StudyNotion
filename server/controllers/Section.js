@@ -13,10 +13,9 @@ exports.createSection = async(req,res)=>{
                 success:false,
                 message:"Missing requried Properties",
             });
-        }
-        // create new section 
+        }        // create new section 
         const newSection = await Section.create({sectionName});
-        // add new section to the coure content array
+        // add new section to the course content array
         const updatedCourse = await Course.findByIdAndUpdate(
             courseId,
             {
@@ -25,11 +24,16 @@ exports.createSection = async(req,res)=>{
                 },
             },
             {new:true}
-        )
-      //Todo use path replace section and subsection
+        ).populate({
+            path: "courseContent",
+            populate: {
+                path: "subSection",
+            },
+        });
+
         // return response 
         return res.status(200).json({
-            sucess:true,
+            success:true,
             message:"Section created successfully",
             updatedCourse,
         });
@@ -81,15 +85,33 @@ exports.updateSection = async(req,res)=>{
 //delete section
 exports.deleteSection = async (req,res)=>{
     try{
-        //get id
-        const {sectionId} = req.params;
+        //get id - assuming it comes from request body based on frontend usage
+        const {sectionId, courseId} = req.body;
+        
         //find by id and delete
         await Section.findByIdAndDelete(sectionId);
-        //todo{testing} : do we need to delete fromn the course Scherma ?
-        // return res
+        
+        //remove section from course content array
+        const updatedCourse = await Course.findByIdAndUpdate(
+            courseId,
+            {
+                $pull: {
+                    courseContent: sectionId,
+                },
+            },
+            {new: true}
+        ).populate({
+            path: "courseContent",
+            populate: {
+                path: "subSection",
+            },
+        });
+        
+        // return res with updated course
        return res.status(200).json({
         success:true,
         message:"Section Deleted Successfully",
+        data: updatedCourse,
        });
 
     }

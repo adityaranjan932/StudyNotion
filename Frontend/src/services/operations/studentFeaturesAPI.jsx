@@ -1,7 +1,7 @@
 import { toast } from "react-hot-toast";
 import { studentEndpoints } from "../apis";
 import { apiConnector } from "../apiconnector";
-import rzpLogo from "../../assets/Images/rzp.png";
+// import rzpLogo from "../../assets/Images/rzp.png";
 import { setPaymentLoading } from "../../slices/courseSlice";
 import { resetCart } from "../../slices/cartSlice";
 
@@ -27,51 +27,87 @@ function loadScript(src) {
 export async function buyCourse(token, courses, userDetails, navigate, dispatch) {
     const toastId = toast.loading("Loading...");
     try{
+        // Check if we're in development mode
+        if (import.meta.env.VITE_APP_MODE === 'development') {
+            // Development mode - simulate successful payment
+            console.log("DEVELOPMENT MODE: Simulating successful payment");
+            
+            // Simulate payment success directly
+            const mockPaymentResponse = {
+                razorpay_order_id: "order_dev_" + Date.now(),
+                razorpay_payment_id: "pay_dev_" + Date.now(),
+                razorpay_signature: "dev_signature_" + Date.now()
+            };
+            
+            // Call verify payment directly
+            await verifyPayment({...mockPaymentResponse, courses}, token, navigate, dispatch);
+            toast.dismiss(toastId);
+            return;
+        }
+
         //load the script
         const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
 
         if(!res) {
             toast.error("RazorPay SDK failed to load");
             return;
-        }
-
-        //initiate the order
+        }//initiate the order
         const orderResponse = await apiConnector("POST", COURSE_PAYMENT_API, 
                                 {courses},
                                 {
                                     Authorization: `Bearer ${token}`,
-                                })
+                                });
 
         if(!orderResponse.data.success) {
             throw new Error(orderResponse.data.message);
         }
         console.log("PRINTING orderResponse", orderResponse);
+        console.log("RAZORPAY_KEY:", import.meta.env.VITE_RAZORPAY_KEY);
+        console.log("Order Data:", orderResponse.data.data);
+        
         //options
-        const options = {
-            key: process.env.RAZORPAY_KEY,
-            currency: orderResponse.data.message.currency,
-            amount: `${orderResponse.data.message.amount}`,
-            order_id:orderResponse.data.message.id,
+        const options = {key: import.meta.env.VITE_RAZORPAY_KEY,
+            currency: orderResponse.data.data.currency,
+            amount: `${orderResponse.data.data.amount}`,
+            order_id: orderResponse.data.data.id,
             name:"StudyNotion",
             description: "Thank You for Purchasing the Course",
-            image:rzpLogo,
+            // image: rzpLogo, // Removed to fix mixed content error
             prefill: {
                 name:`${userDetails.firstName}`,
                 email:userDetails.email
-            },
-            handler: function(response) {
+            },            handler: function(response) {
+                console.log("Razorpay payment successful:", response);
                 //send successful wala mail
-                sendPaymentSuccessEmail(response, orderResponse.data.message.amount,token );
+                sendPaymentSuccessEmail(response, orderResponse.data.data.amount, token );
                 //verifyPayment
                 verifyPayment({...response, courses}, token, navigate, dispatch);
             }
-        }
-        //miss hogya tha 
+        }        //miss hogya tha 
         const paymentObject = new window.Razorpay(options);
         paymentObject.open();
+        
         paymentObject.on("payment.failed", function(response) {
-            toast.error("oops, payment failed");
-            console.log(response.error);
+            console.log("Payment failed response:", response.error);
+            
+            // If payment fails due to test mode issues, offer alternative
+            if (import.meta.env.VITE_APP_MODE === 'development') {
+                toast.error("Payment failed. Would you like to proceed with test enrollment?");
+                
+                // Give option to proceed with test enrollment
+                setTimeout(() => {
+                    if (confirm("Payment failed in test mode. Proceed with test enrollment?")) {
+                        const mockPaymentResponse = {
+                            razorpay_order_id: "order_dev_fallback_" + Date.now(),
+                            razorpay_payment_id: "pay_dev_fallback_" + Date.now(),
+                            razorpay_signature: "dev_signature_fallback_" + Date.now()
+                        };
+                        verifyPayment({...mockPaymentResponse, courses}, token, navigate, dispatch);
+                    }
+                }, 2000);
+            } else {
+                toast.error("Payment failed: " + (response.error?.description || "Unknown error"));
+            }
         })
 
     }

@@ -52,7 +52,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
     })
   }
 
-  // console.log("Student already enrolled ", course?.studentsEnroled, user?._id)
+  // console.log("Student already enrolled ", course?.studentsEnrolled, user?._id)
 
   return (
     <>
@@ -69,21 +69,20 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
         <div className="px-4">
           <div className="space-x-3 pb-4 text-3xl font-semibold">
             Rs. {CurrentPrice}
-          </div>
-          <div className="flex flex-col gap-4">
+          </div>          <div className="flex flex-col gap-4">
             <button
               className="yellowButton"
               onClick={
-                user && course?.studentsEnroled.includes(user?._id)
+                user && course?.studentsEnrolled && Array.isArray(course.studentsEnrolled) && course.studentsEnrolled.includes(user?._id)
                   ? () => navigate("/dashboard/enrolled-courses")
                   : handleBuyCourse
               }
             >
-              {user && course?.studentsEnroled.includes(user?._id)
+              {user && course?.studentsEnrolled && Array.isArray(course.studentsEnrolled) && course.studentsEnrolled.includes(user?._id)
                 ? "Go To Course"
                 : "Buy Now"}
             </button>
-            {(!user || !course?.studentsEnroled.includes(user?._id)) && (
+            {(!user || !course?.studentsEnrolled || !Array.isArray(course.studentsEnrolled) || !course.studentsEnrolled.includes(user?._id)) && (
               <button onClick={handleAddToCart} className="blackButton">
                 Add to Cart
               </button>

@@ -1,7 +1,7 @@
 const Course = require("../models/Course")
 const Category = require("../models/Category")
 const Section = require("../models/Section")
-const SubSection = require("../models/Subsection")
+const SubSection = require("../models/SubSection")
 const User = require("../models/User")
 const { uploadImageToCloudinary } = require("../utils/imageUploader")
 const CourseProgress = require("../models/CourseProgress")
@@ -10,9 +10,7 @@ const { convertSecondsToDuration } = require("../utils/secToDuration")
 exports.createCourse = async (req, res) => {
   try {
     // Get user ID from request object
-    const userId = req.user.id
-
-    // Get all required fields from request body
+    const userId = req.user.id// Get all required fields from request body
     let {
       courseName,
       courseDescription,
@@ -23,7 +21,23 @@ exports.createCourse = async (req, res) => {
       status,
       instructions: _instructions,
     } = req.body
-    // Get thumbnail image from request files
+
+    // Convert price to number and validate
+    const numericPrice = parseFloat(price)
+    if (isNaN(numericPrice) || numericPrice < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid price (must be a number greater than or equal to 0)",
+      })
+    }
+    price = numericPrice    // Get thumbnail image from request files
+    if (!req.files || !req.files.thumbnailImage) {
+      return res.status(400).json({
+        success: false,
+        message: "Thumbnail image is required. Please upload a thumbnail image.",
+      })
+    }
+    
     const thumbnail = req.files.thumbnailImage
 
     // Convert the tag and instructions from stringified Array to Array
@@ -31,14 +45,12 @@ exports.createCourse = async (req, res) => {
     const instructions = JSON.parse(_instructions)
 
     console.log("tag", tag)
-    console.log("instructions", instructions)
-
-    // Check if any of the required fields are missing
+    console.log("instructions", instructions)    // Check if any of the required fields are missing
     if (
       !courseName ||
       !courseDescription ||
       !whatYouWillLearn ||
-      !price ||
+      isNaN(price) ||
       !tag.length ||
       !thumbnail ||
       !category ||
@@ -136,15 +148,25 @@ exports.editCourse = async (req, res) => {
   try {
     const { courseId } = req.body
     const updates = req.body
+    
+    if (!courseId) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Course ID is required" 
+      })
+    }
+    
     const course = await Course.findById(courseId)
 
     if (!course) {
-      return res.status(404).json({ error: "Course not found" })
+      return res.status(404).json({ 
+        success: false,
+        error: "Course not found" 
+      })
     }
 
     // If Thumbnail Image is found, update it
-    if (req.files) {
-      console.log("thumbnail update")
+    if (req.files && req.files.thumbnailImage) {
       const thumbnail = req.files.thumbnailImage
       const thumbnailImage = await uploadImageToCloudinary(
         thumbnail,
@@ -154,11 +176,23 @@ exports.editCourse = async (req, res) => {
     }
 
     // Update only the fields that are present in the request body
+    const allowedFields = ['courseName', 'courseDescription', 'whatYouWillLearn', 'price', 'tag', 'category', 'status', 'instructions'];
+    
     for (const key in updates) {
-      if (updates.hasOwnProperty(key)) {
-        if (key === "tag" || key === "instructions") {
-          course[key] = JSON.parse(updates[key])
-        } else {
+      if (updates.hasOwnProperty(key) && key !== 'courseId' && allowedFields.includes(key)) {
+        try {
+          if (key === "tag" || key === "instructions") {
+            // Only parse JSON if the value is a string and looks like JSON
+            if (typeof updates[key] === 'string' && (updates[key].startsWith('[') || updates[key].startsWith('{'))) {
+              course[key] = JSON.parse(updates[key])
+            } else {
+              course[key] = updates[key]
+            }
+          } else {
+            course[key] = updates[key]
+          }
+        } catch (parseError) {
+          // If JSON parsing fails, use the value as is
           course[key] = updates[key]
         }
       }
@@ -191,7 +225,7 @@ exports.editCourse = async (req, res) => {
       data: updatedCourse,
     })
   } catch (error) {
-    console.error(error)
+    console.error("Error updating course:", error)
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -199,6 +233,7 @@ exports.editCourse = async (req, res) => {
     })
   }
 }
+
 // Get Course List
 exports.getAllCourses = async (req, res) => {
   try {
@@ -346,7 +381,23 @@ exports.getFullCourseDetails = async (req, res) => {
   try {
     const { courseId } = req.body
     const userId = req.user.id
-    const courseDetails = await Course.findOne({
+    
+    console.log("getFullCourseDetails - courseId:", courseId, "userId:", userId)
+    
+    if (!courseId) {
+      return res.status(400).json({
+        success: false,
+        message: "Course ID is required",
+      })
+    }
+
+    // Validate ObjectId format
+    if (!courseId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid course ID format",
+      })
+    }    const courseDetails = await Course.findOne({
       _id: courseId,
     })
       .populate({
@@ -365,12 +416,7 @@ exports.getFullCourseDetails = async (req, res) => {
       })
       .exec()
 
-    let courseProgressCount = await CourseProgress.findOne({
-      courseID: courseId,
-      userId: userId,
-    })
-
-    console.log("courseProgressCount : ", courseProgressCount)
+    console.log("courseDetails found:", !!courseDetails)
 
     if (!courseDetails) {
       return res.status(400).json({
@@ -379,7 +425,24 @@ exports.getFullCourseDetails = async (req, res) => {
       })
     }
 
-    // if (courseDetails.status === "Draft") {
+    // TODO: Add enrollment check back after debugging
+    // Check if user is enrolled in the course
+    // const isEnrolled = courseDetails.studentsEnrolled && 
+    //   courseDetails.studentsEnrolled.includes(userId)
+      
+    // if (!isEnrolled) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: "You are not enrolled in this course",
+    //   })
+    // }
+
+    let courseProgressCount = await CourseProgress.findOne({
+      courseID: courseId,
+      userId: userId,
+    })
+
+    console.log("courseProgressCount found:", !!courseProgressCount)    // if (courseDetails.status === "Draft") {
     //   return res.status(403).json({
     //     success: false,
     //     message: `Accessing a draft course is forbidden`,
@@ -387,12 +450,21 @@ exports.getFullCourseDetails = async (req, res) => {
     // }
 
     let totalDurationInSeconds = 0
-    courseDetails.courseContent.forEach((content) => {
-      content.subSection.forEach((subSection) => {
-        const timeDurationInSeconds = parseInt(subSection.timeDuration)
-        totalDurationInSeconds += timeDurationInSeconds
-      })
-    })
+    try {
+      if (courseDetails.courseContent && Array.isArray(courseDetails.courseContent)) {
+        courseDetails.courseContent.forEach((content) => {
+          if (content.subSection && Array.isArray(content.subSection)) {
+            content.subSection.forEach((subSection) => {
+              const timeDurationInSeconds = parseInt(subSection.timeDuration || 0)
+              totalDurationInSeconds += timeDurationInSeconds
+            })
+          }
+        })
+      }
+    } catch (durationError) {
+      console.error("Error calculating duration:", durationError)
+      totalDurationInSeconds = 0
+    }
 
     const totalDuration = convertSecondsToDuration(totalDurationInSeconds)
 
@@ -407,6 +479,7 @@ exports.getFullCourseDetails = async (req, res) => {
       },
     })
   } catch (error) {
+    console.error("getFullCourseDetails error:", error)
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -451,7 +524,7 @@ exports.deleteCourse = async (req, res) => {
     }
 
     // Unenroll students from the course
-    const studentsEnrolled = course.studentsEnroled
+    const studentsEnrolled = course.studentsEnrolled
     for (const studentId of studentsEnrolled) {
       await User.findByIdAndUpdate(studentId, {
         $pull: { courses: courseId },
@@ -487,6 +560,56 @@ exports.deleteCourse = async (req, res) => {
       success: false,
       message: "Server error",
       error: error.message,
+    })
+  }
+}
+
+// Update course progress - mark a lecture as complete
+exports.updateCourseProgress = async (req, res) => {
+  try {
+    const { courseId, subsectionId } = req.body
+    const userId = req.user.id
+
+    console.log("updateCourseProgress - courseId:", courseId, "subsectionId:", subsectionId, "userId:", userId)
+
+    if (!courseId || !subsectionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Course ID and SubSection ID are required",
+      })
+    }
+
+    // Find or create course progress for the user
+    let courseProgress = await CourseProgress.findOne({
+      courseID: courseId,
+      userId: userId,
+    })
+
+    if (!courseProgress) {
+      // Create new course progress if it doesn't exist
+      courseProgress = await CourseProgress.create({
+        courseID: courseId,
+        userId: userId,
+        completedVideos: [subsectionId],
+      })
+    } else {
+      // Check if the subsection is already completed
+      if (!courseProgress.completedVideos.includes(subsectionId)) {
+        courseProgress.completedVideos.push(subsectionId)
+        await courseProgress.save()
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Lecture marked as complete",
+      data: courseProgress,
+    })
+  } catch (error) {
+    console.error("updateCourseProgress error:", error)
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     })
   }
 }

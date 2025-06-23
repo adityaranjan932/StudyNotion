@@ -12,44 +12,61 @@ export default function Instructor() {
   const [loading, setLoading] = useState(false)
   const [instructorData, setInstructorData] = useState(null)
   const [courses, setCourses] = useState([])
-
   useEffect(() => {
     ;(async () => {
       setLoading(true)
-      const instructorApiData = await getInstructorData(token)
-      const result = await fetchInstructorCourses(token)
-      console.log(instructorApiData)
-      if (instructorApiData.length) setInstructorData(instructorApiData)
-      if (result) {
-        setCourses(result)
+      try {
+        const instructorApiData = await getInstructorData(token)
+        const result = await fetchInstructorCourses(token)
+        console.log(instructorApiData)
+        if (instructorApiData && instructorApiData.length) {
+          setInstructorData(instructorApiData)
+        }
+        if (result && Array.isArray(result)) {
+          setCourses(result)
+        } else {
+          setCourses([])
+        }
+      } catch (error) {
+        console.error('Error fetching instructor data:', error)
+        setCourses([])
+        setInstructorData(null)
       }
       setLoading(false)
     })()
-  }, [])
-
-  const totalAmount = instructorData?.reduce(
-    (acc, curr) => acc + curr.totalAmountGenerated,
+  }, [token])
+  const totalAmount = instructorData && Array.isArray(instructorData) ? instructorData.reduce(
+    (acc, curr) => acc + (curr?.totalAmountGenerated || 0),
     0
-  )
+  ) : 0
 
-  const totalStudents = instructorData?.reduce(
-    (acc, curr) => acc + curr.totalStudentsEnrolled,
+  const totalStudents = instructorData && Array.isArray(instructorData) ? instructorData.reduce(
+    (acc, curr) => acc + (curr?.totalStudentsEnrolled || 0),
     0
-  )
+  ) : 0
+  // Early return if essential data is missing
+  if (!user || !token) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-lg text-richblack-200">Please log in to view dashboard</p>
+      </div>
+    )
+  }
 
   return (
     <div>
       <div className="space-y-2">
         <h1 className="text-2xl font-bold text-richblack-5">
-          Hi {user?.firstName} 👋
+          Hi {user?.firstName || 'User'} 👋
         </h1>
         <p className="font-medium text-richblack-200">
           Let's start something new
         </p>
       </div>
       {loading ? (
-        <div className="spinner"></div>
-      ) : courses.length > 0 ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="spinner"></div>
+        </div>) : courses && courses.length > 0 ? (
         <div>
           <div className="my-4 flex h-[450px] space-x-4">
             {/* Render chart / graph */}
@@ -66,23 +83,22 @@ export default function Instructor() {
             {/* Total Statistics */}
             <div className="flex min-w-[250px] flex-col rounded-md bg-richblack-800 p-6">
               <p className="text-lg font-bold text-richblack-5">Statistics</p>
-              <div className="mt-4 space-y-4">
-                <div>
+              <div className="mt-4 space-y-4">                <div>
                   <p className="text-lg text-richblack-200">Total Courses</p>
                   <p className="text-3xl font-semibold text-richblack-50">
-                    {courses.length}
+                    {courses?.length || 0}
                   </p>
                 </div>
                 <div>
                   <p className="text-lg text-richblack-200">Total Students</p>
                   <p className="text-3xl font-semibold text-richblack-50">
-                    {totalStudents}
+                    {totalStudents || 0}
                   </p>
                 </div>
                 <div>
                   <p className="text-lg text-richblack-200">Total Income</p>
                   <p className="text-3xl font-semibold text-richblack-50">
-                    Rs. {totalAmount}
+                    Rs. {totalAmount || 0}
                   </p>
                 </div>
               </div>
@@ -95,33 +111,41 @@ export default function Instructor() {
               <Link to="/dashboard/my-courses">
                 <p className="text-xs font-semibold text-yellow-50">View All</p>
               </Link>
-            </div>
-            <div className="my-4 flex items-start space-x-6">
-              {courses.slice(0, 3).map((course) => (
+            </div>            <div className="my-4 flex items-start space-x-6">
+              {courses && courses.length > 0 ? courses.slice(0, 3).map((course) => {
+                // Safety check for course object
+                if (!course || !course._id) return null;
+                
+                return (
                 <div key={course._id} className="w-1/3">
                   <img
-                    src={course.thumbnail}
-                    alt={course.courseName}
+                    src={course.thumbnail || '/placeholder-image.jpg'}
+                    alt={course.courseName || 'Course thumbnail'}
                     className="h-[201px] w-full rounded-md object-cover"
                   />
                   <div className="mt-3 w-full">
                     <p className="text-sm font-medium text-richblack-50">
-                      {course.courseName}
+                      {course.courseName || 'Untitled Course'}
                     </p>
                     <div className="mt-1 flex items-center space-x-2">
                       <p className="text-xs font-medium text-richblack-300">
-                        {course.studentsEnroled.length} students
+                        {(course.studentsEnrolled && Array.isArray(course.studentsEnrolled)) ? course.studentsEnrolled.length : 0} students
                       </p>
                       <p className="text-xs font-medium text-richblack-300">
                         |
                       </p>
                       <p className="text-xs font-medium text-richblack-300">
-                        Rs. {course.price}
+                        Rs. {course.price || 0}
                       </p>
                     </div>
                   </div>
                 </div>
-              ))}
+                )
+              }) : (
+                <div className="text-center text-richblack-300">
+                  No courses available
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { HiOutlineGlobeAlt } from "react-icons/hi"
 import ReactMarkdown from "react-markdown"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
+import { toast } from "react-hot-toast"
 
 import ConfirmationModal from "../components/common/ConfirmationModal"
 import Footer from "../components/common/Footer"
@@ -82,24 +83,33 @@ function CourseDetails() {
         <div className="spinner"></div>
       </div>
     )
-  }
-  if (!response.success) {
+  }  if (!response.success) {
     return <Error />
   }
 
+  // Early return if course details are not available
+  if (!response.data?.courseDetails) {
+    return (
+      <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
+        <div className="text-center">
+          <p className="text-lg text-richblack-200">Course details not found</p>
+        </div>
+      </div>
+    )
+  }
   const {
     _id: course_id,
-    courseName,
-    courseDescription,
-    thumbnail,
-    price,
-    whatYouWillLearn,
-    courseContent,
-    ratingAndReviews,
-    instructor,
-    studentsEnroled,
-    createdAt,
-  } = response.data?.courseDetails
+    courseName = '',
+    courseDescription = '',
+    thumbnail = '',
+    price = 0,
+    whatYouWillLearn = '',
+    courseContent = [],
+    ratingAndReviews = [],
+    instructor = {},    studentsEnrolled = [],
+    createdAt = '',
+  } = response.data?.courseDetails || {}
+
   const handleBuyCourse = () => {
     if (token) {
       buyCourse(token, [courseId], user, navigate, dispatch)
@@ -113,6 +123,44 @@ function CourseDetails() {
       btn1Handler: () => navigate("/login"),
       btn2Handler: () => setConfirmationModal(null),
     })
+  }
+
+  // Development mode helper function
+  const handleDevEnrollment = async () => {
+    if (!token) {
+      toast.error("Please login first");
+      return;
+    }
+    
+    try {
+      // Simulate payment verification directly
+      const mockPaymentData = {
+        razorpay_order_id: "order_dev_manual_" + Date.now(),
+        razorpay_payment_id: "pay_dev_manual_" + Date.now(),
+        razorpay_signature: "dev_signature_manual_" + Date.now(),
+        courses: [courseId]
+      };
+
+      const response = await fetch("http://localhost:4000/api/v1/payment/verifyPayment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(mockPaymentData)
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        toast.success("Successfully enrolled in development mode!");
+        navigate("/dashboard/enrolled-courses");
+      } else {
+        toast.error("Enrollment failed");
+      }
+    } catch (error) {
+      console.error("Dev enrollment error:", error);
+      toast.error("Development enrollment failed");
+    }
   }
 
   if (paymentLoading) {
@@ -146,16 +194,14 @@ function CourseDetails() {
                   {courseName}
                 </p>
               </div>
-              <p className={`text-richblack-200`}>{courseDescription}</p>
-              <div className="text-md flex flex-wrap items-center gap-2">
-                <span className="text-yellow-25">{avgReviewCount}</span>
+              <p className={`text-richblack-200`}>{courseDescription}</p>              <div className="text-md flex flex-wrap items-center gap-2">
+                <span className="text-yellow-25">{typeof avgReviewCount === 'number' && !isNaN(avgReviewCount) ? avgReviewCount.toFixed(1) : '0.0'}</span>
                 <RatingStars Review_Count={avgReviewCount} Star_Size={24} />
-                <span>{`(${ratingAndReviews.length} reviews)`}</span>
-                <span>{`${studentsEnroled.length} students enrolled`}</span>
-              </div>
-              <div>
+                <span>{`(${ratingAndReviews?.length || 0} reviews)`}</span>
+                <span>{`${studentsEnrolled?.length || 0} students enrolled`}</span>
+              </div><div>
                 <p className="">
-                  Created By {`${instructor.firstName} ${instructor.lastName}`}
+                  Created By {`${instructor?.firstName || 'Unknown'} ${instructor?.lastName || 'Instructor'}`}
                 </p>
               </div>
               <div className="flex flex-wrap gap-5 text-lg">
@@ -168,14 +214,22 @@ function CourseDetails() {
                   <HiOutlineGlobeAlt /> English
                 </p>
               </div>
-            </div>
-            <div className="flex w-full flex-col gap-4 border-y border-y-richblack-500 py-4 lg:hidden">
+            </div>            <div className="flex w-full flex-col gap-4 border-y border-y-richblack-500 py-4 lg:hidden">
               <p className="space-x-3 pb-4 text-3xl font-semibold text-richblack-5">
                 Rs. {price}
               </p>
               <button className="yellowButton" onClick={handleBuyCourse}>
                 Buy Now
               </button>
+              {/* Development Mode Button */}
+              {process.env.NODE_ENV === 'development' && (
+                <button 
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                  onClick={handleDevEnrollment}
+                >
+                  🚀 Dev: Free Enroll (Skip Payment)
+                </button>
+              )}
               <button className="blackButton">Add to Cart</button>
             </div>
           </div>
@@ -204,9 +258,8 @@ function CourseDetails() {
             <div className="flex flex-col gap-3">
               <p className="text-[28px] font-semibold">Course Content</p>
               <div className="flex flex-wrap justify-between gap-2">
-                <div className="flex gap-2">
-                  <span>
-                    {courseContent.length} {`section(s)`}
+                <div className="flex gap-2">                  <span>
+                    {courseContent?.length || 0} {`section(s)`}
                   </span>
                   <span>
                     {totalNoOfLectures} {`lecture(s)`}

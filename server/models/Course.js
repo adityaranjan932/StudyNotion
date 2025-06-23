@@ -3,11 +3,10 @@ const mongoose = require("mongoose");
 // Define the Courses schema
 const courseSchema = new mongoose.Schema({
 	courseName: { type: String },
-	courseDescription: { type: String },
-	instructor: {
+	courseDescription: { type: String },	instructor: {
 		type: mongoose.Schema.Types.ObjectId,
 		required: true,
-		ref: "user",
+		ref: "User",
 	},
 	whatYouWillLearn: {
 		type: String,
@@ -17,11 +16,10 @@ const courseSchema = new mongoose.Schema({
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "Section",
 		},
-	],
-	ratingAndReviews: [
+	],	ratingAndReviews: [
 		{
 			type: mongoose.Schema.Types.ObjectId,
-			ref: "RatingAndReview",
+			ref: "RatingAndReviews",
 		},
 	],
 	price: {

@@ -25,9 +25,9 @@ export default function CourseInformationForm() {
     getValues,
     formState: { errors },
   } = useForm()
-
   const dispatch = useDispatch()
   const { token } = useSelector((state) => state.auth)
+  const { user } = useSelector((state) => state.auth)
   const { course, editCourse } = useSelector((state) => state.course)
   const [loading, setLoading] = useState(false)
   const [courseCategories, setCourseCategories] = useState([])
@@ -76,11 +76,14 @@ export default function CourseInformationForm() {
       return true
     }
     return false
-  }
-
-  //   handle next button click
+  }  //   handle next button click
   const onSubmit = async (data) => {
     // console.log(data)
+    
+    if (!token) {
+      toast.error("You are not logged in. Please login again.")
+      return
+    }
 
     if (editCourse) {
       // const currentValues = getValues()
@@ -134,9 +137,7 @@ export default function CourseInformationForm() {
         toast.error("No changes made to the form")
       }
       return
-    }
-
-    const formData = new FormData()
+    }    const formData = new FormData()
     formData.append("courseName", data.courseTitle)
     formData.append("courseDescription", data.courseShortDesc)
     formData.append("price", data.coursePrice)

@@ -14,13 +14,16 @@ import { FreeMode, Pagination } from "swiper/modules"
 import Course_Card from "./Course_Card"
 
 function Course_Slider({ Courses }) {
+  // Only enable loop if there are enough slides
+  const shouldLoop = Courses && Courses.length > 3
+  
   return (
     <>
       {Courses?.length ? (
         <Swiper
           slidesPerView={1}
           spaceBetween={25}
-          loop={true}
+          loop={shouldLoop}
           modules={[FreeMode, Pagination]}
           breakpoints={{
             1024: {
