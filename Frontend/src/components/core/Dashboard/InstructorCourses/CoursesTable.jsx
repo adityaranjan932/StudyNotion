@@ -23,6 +23,36 @@ export default function CoursesTable({ courses, setCourses }) {
   const [confirmationModal, setConfirmationModal] = useState(null)
   const TRUNCATE_LENGTH = 30
 
+  // Function to calculate course duration
+  const calculateCourseDuration = (course) => {
+    if (!course.courseContent || !Array.isArray(course.courseContent)) {
+      return "0s"
+    }
+    
+    let totalDurationInSeconds = 0
+    course.courseContent.forEach((section) => {
+      if (section.subSection && Array.isArray(section.subSection)) {
+        section.subSection.forEach((subSection) => {
+          const duration = parseInt(subSection.timeDuration || 0)
+          totalDurationInSeconds += duration
+        })
+      }
+    })
+    
+    // Convert seconds to readable format (matching backend format)
+    const hours = Math.floor(totalDurationInSeconds / 3600)
+    const minutes = Math.floor((totalDurationInSeconds % 3600) / 60)
+    const seconds = Math.floor((totalDurationInSeconds % 3600) % 60)
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds}s`
+    } else {
+      return `${seconds}s`
+    }
+  }
+
   const handleCourseDelete = async (courseId) => {
     setLoading(true)
     await deleteCourse({ courseId: courseId }, token)
@@ -106,7 +136,7 @@ export default function CoursesTable({ courses, setCourses }) {
                   </div>
                 </Td>
                 <Td className="text-sm font-medium text-richblack-100">
-                  2hr 30min
+                  {calculateCourseDuration(course)}
                 </Td>
                 <Td className="text-sm font-medium text-richblack-100">
                   ₹{course.price}

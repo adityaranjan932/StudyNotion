@@ -125,44 +125,6 @@ function CourseDetails() {
     })
   }
 
-  // Development mode helper function
-  const handleDevEnrollment = async () => {
-    if (!token) {
-      toast.error("Please login first");
-      return;
-    }
-    
-    try {
-      // Simulate payment verification directly
-      const mockPaymentData = {
-        razorpay_order_id: "order_dev_manual_" + Date.now(),
-        razorpay_payment_id: "pay_dev_manual_" + Date.now(),
-        razorpay_signature: "dev_signature_manual_" + Date.now(),
-        courses: [courseId]
-      };
-
-      const response = await fetch("http://localhost:4000/api/v1/payment/verifyPayment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(mockPaymentData)
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        toast.success("Successfully enrolled in development mode!");
-        navigate("/dashboard/enrolled-courses");
-      } else {
-        toast.error("Enrollment failed");
-      }
-    } catch (error) {
-      console.error("Dev enrollment error:", error);
-      toast.error("Development enrollment failed");
-    }
-  }
-
   if (paymentLoading) {
     // console.log("payment loading")
     return (
@@ -221,15 +183,6 @@ function CourseDetails() {
               <button className="yellowButton" onClick={handleBuyCourse}>
                 Buy Now
               </button>
-              {/* Development Mode Button */}
-              {process.env.NODE_ENV === 'development' && (
-                <button 
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
-                  onClick={handleDevEnrollment}
-                >
-                  🚀 Dev: Free Enroll (Skip Payment)
-                </button>
-              )}
               <button className="blackButton">Add to Cart</button>
             </div>
           </div>

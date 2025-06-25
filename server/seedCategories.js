@@ -30,6 +30,10 @@ const categories = [
   {
     name: "Database",
     description: "Learn database design, SQL, NoSQL, MongoDB, PostgreSQL, and database optimization"
+  },
+  {
+    name: "DSA",
+    description: "Master essential data structures and algorithms concepts for efficient problem-solving and technical interviews"
   }
 ];
 

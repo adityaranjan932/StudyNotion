@@ -27,31 +27,15 @@ function loadScript(src) {
 export async function buyCourse(token, courses, userDetails, navigate, dispatch) {
     const toastId = toast.loading("Loading...");
     try{
-        // Check if we're in development mode
-        if (import.meta.env.VITE_APP_MODE === 'development') {
-            // Development mode - simulate successful payment
-            console.log("DEVELOPMENT MODE: Simulating successful payment");
-            
-            // Simulate payment success directly
-            const mockPaymentResponse = {
-                razorpay_order_id: "order_dev_" + Date.now(),
-                razorpay_payment_id: "pay_dev_" + Date.now(),
-                razorpay_signature: "dev_signature_" + Date.now()
-            };
-            
-            // Call verify payment directly
-            await verifyPayment({...mockPaymentResponse, courses}, token, navigate, dispatch);
-            toast.dismiss(toastId);
-            return;
-        }
-
         //load the script
         const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
 
         if(!res) {
             toast.error("RazorPay SDK failed to load");
             return;
-        }//initiate the order
+        }
+        
+        //initiate the order
         const orderResponse = await apiConnector("POST", COURSE_PAYMENT_API, 
                                 {courses},
                                 {
@@ -61,7 +45,30 @@ export async function buyCourse(token, courses, userDetails, navigate, dispatch)
         if(!orderResponse.data.success) {
             throw new Error(orderResponse.data.message);
         }
+        
         console.log("PRINTING orderResponse", orderResponse);
+        
+        // Check if course is free
+        if (orderResponse.data.data.isFree || orderResponse.data.data.amount === 0) {
+            console.log("Free course detected, enrolling directly...");
+            toast.dismiss(toastId);
+            toast.loading("Enrolling you in this free course...", {
+                id: 'free-enroll',
+            });
+            
+            // Create mock payment data for free enrollment
+            const freeEnrollmentData = {
+                razorpay_order_id: orderResponse.data.data.id,
+                razorpay_payment_id: "free_payment_" + Date.now(),
+                razorpay_signature: "free_signature_" + Date.now(),
+                courses: courses
+            };
+            
+            // Directly verify "payment" for free course
+            await verifyPayment(freeEnrollmentData, token, navigate, dispatch);
+            return;
+        }
+        
         console.log("RAZORPAY_KEY:", import.meta.env.VITE_RAZORPAY_KEY);
         console.log("Order Data:", orderResponse.data.data);
         
@@ -135,7 +142,8 @@ async function sendPaymentSuccessEmail(response, amount, token) {
 
 //verify payment
 async function verifyPayment(bodyData, token, navigate, dispatch) {
-    const toastId = toast.loading("Verifying Payment....");
+    const isFreeEnrollment = bodyData.razorpay_payment_id?.startsWith('free_payment_');
+    const toastId = toast.loading(isFreeEnrollment ? "Enrolling you in the course..." : "Verifying Payment....");
     dispatch(setPaymentLoading(true));
     try{
         const response  = await apiConnector("POST", COURSE_VERIFY_API, bodyData, {
@@ -145,7 +153,21 @@ async function verifyPayment(bodyData, token, navigate, dispatch) {
         if(!response.data.success) {
             throw new Error(response.data.message);
         }
-        toast.success("payment Successful, ypou are addded to the course");
+        
+        if (isFreeEnrollment) {
+            toast.success("Successfully enrolled in the free course!");
+        } else {
+            toast.success("Payment successful! You are enrolled in the course");
+        }
+        
+        // Refresh user data to update enrollment status
+        try {
+            const { getUserDetails } = await import("./profileAPI")
+            await getUserDetails(token, dispatch)
+        } catch (error) {
+            console.log("Failed to refresh user data:", error)
+        }
+        
         navigate("/dashboard/enrolled-courses");
         dispatch(resetCart());
     }   
@@ -154,5 +176,6 @@ async function verifyPayment(bodyData, token, navigate, dispatch) {
         toast.error("Could not verify Payment");
     }
     toast.dismiss(toastId);
+    toast.dismiss('free-enroll'); // Dismiss free enrollment toast
     dispatch(setPaymentLoading(false));
 }
