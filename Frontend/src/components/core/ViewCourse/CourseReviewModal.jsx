@@ -1,16 +1,20 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { RxCross2 } from "react-icons/rx"
+import { FaStar } from "react-icons/fa"
 import ReactStars from "react-rating-stars-component"
 import { useSelector } from "react-redux"
+import toast from "react-hot-toast"
 
 import { createRating } from "../../../services/operations/courseDetailsAPI"
 import IconBtn from "../../Common/IconBtn"
+import StarRating from "../../common/StarRating"
 
 export default function CourseReviewModal({ setReviewModal }) {
   const { user } = useSelector((state) => state.profile)
   const { token } = useSelector((state) => state.auth)
   const { courseEntireData } = useSelector((state) => state.viewCourse)
+  const [currentRating, setCurrentRating] = useState(0)
 
   const {
     register,
@@ -27,10 +31,16 @@ export default function CourseReviewModal({ setReviewModal }) {
 
   const ratingChanged = (newRating) => {
     // console.log(newRating)
+    setCurrentRating(newRating)
     setValue("courseRating", newRating)
   }
 
   const onSubmit = async (data) => {
+    if (data.courseRating === 0) {
+      toast.error("Please select a rating for the course")
+      return
+    }
+    
     await createRating(
       {
         courseId: courseEntireData._id,
@@ -71,12 +81,42 @@ export default function CourseReviewModal({ setReviewModal }) {
             onSubmit={handleSubmit(onSubmit)}
             className="mt-6 flex flex-col items-center"
           >
-            <ReactStars
-              count={5}
-              onChange={ratingChanged}
-              size={24}
-              activeColor="#ffd700"
-            />
+            <div className="flex flex-col items-center space-y-2 mb-4">
+              <label className="text-sm text-richblack-5">
+                Rate this course <sup className="text-pink-200">*</sup>
+              </label>
+              
+              {/* Try ReactStars first, fallback to custom StarRating */}
+              <div className="flex items-center justify-center p-2 bg-richblack-700 rounded-md">
+                <StarRating
+                  count={5}
+                  value={currentRating}
+                  onChange={ratingChanged}
+                  size={30}
+                />
+              </div>
+              
+              {/* Alternative: ReactStars component (comment out StarRating above and uncomment this) */}
+              {/* 
+              <div className="flex items-center justify-center p-2 bg-richblack-700 rounded-md">
+                <ReactStars
+                  count={5}
+                  onChange={ratingChanged}
+                  size={30}
+                  activeColor="#ffd700"
+                  color="#6b7280"
+                  isHalf={false}
+                  value={currentRating}
+                />
+              </div>
+              */}
+              
+              {currentRating > 0 && (
+                <p className="text-sm text-richblack-200">
+                  You rated: {currentRating} star{currentRating !== 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
             <div className="flex w-11/12 flex-col space-y-2">
               <label
                 className="text-sm text-richblack-5"

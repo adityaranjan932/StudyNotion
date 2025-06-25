@@ -10,6 +10,7 @@ import LearningLanguageSection from "../components/core/Homepage/LearningLanguag
 import InstructorSection from "../components/core/Homepage/InstructorSection";
 import Footer from "../components/common/Footer";
 import ExploreMore from "../components/core/Homepage/ExploreMore";
+import ReviewSlider from "../components/common/ReviewSlider";
 
 const Home = () => {
   return (
@@ -43,11 +44,101 @@ const Home = () => {
           </CTAButton>
         </div>
 
-        <div className="mx-3 my-12 shadow-blue-200 w-[70%] relative">
-          <div className="grad2 -top-10 w-[800px]"></div>
-          <video className="video" muted loop autoPlay>
-            <source src={Banner} type="video/mp4" />
-          </video>
+        {/* Professional Video Section */}
+        <div className="relative mx-auto my-20 w-full max-w-7xl px-4">
+          {/* Animated Background Elements */}
+          <div className="absolute -top-16 -left-16 w-96 h-96 bg-gradient-to-r from-blue-400 via-purple-500 to-cyan-400 rounded-full opacity-10 blur-3xl animate-pulse floating-element"></div>
+          <div className="absolute -bottom-16 -right-16 w-80 h-80 bg-gradient-to-r from-pink-400 via-yellow-500 to-orange-400 rounded-full opacity-15 blur-3xl animate-pulse floating-element" style={{animationDelay: '1s'}}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-professional opacity-5 rounded-3xl"></div>
+          
+          {/* Main Video Container */}
+          <div className="relative video-container bg-gradient-to-br from-richblack-800 via-richblack-900 to-richblack-800 p-3 glow-effect">
+            {/* Glass Effect Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5 rounded-2xl"></div>
+            
+            {/* Video Element */}
+            <div className="relative group overflow-hidden rounded-xl">
+              <video 
+                className="w-full h-auto object-cover transition-all duration-700 ease-out transform group-hover:scale-105 filter brightness-95 group-hover:brightness-105" 
+                muted 
+                loop 
+                autoPlay
+                playsInline
+              >
+                <source src={Banner} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              
+              {/* Video Overlay Effects */}
+              <div className="absolute inset-0 bg-gradient-to-t from-richblack-900/20 via-transparent to-richblack-900/10 pointer-events-none"></div>
+              
+              {/* Corner Decorations */}
+              <div className="absolute top-3 left-3 w-8 h-8 border-l-2 border-t-2 border-blue-400 rounded-tl-lg opacity-60"></div>
+              <div className="absolute top-3 right-3 w-8 h-8 border-r-2 border-t-2 border-purple-400 rounded-tr-lg opacity-60"></div>
+              <div className="absolute bottom-3 left-3 w-8 h-8 border-l-2 border-b-2 border-green-400 rounded-bl-lg opacity-60"></div>
+              <div className="absolute bottom-3 right-3 w-8 h-8 border-r-2 border-b-2 border-yellow-400 rounded-br-lg opacity-60"></div>
+              
+              {/* Status Indicators */}
+              <div className="absolute top-6 left-6 flex items-center gap-2 bg-richblack-800/90 backdrop-blur-md rounded-full px-4 py-2 border border-richblack-600">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-xs font-medium text-richblack-100">Live Learning</span>
+              </div>
+              
+              <div className="absolute top-6 right-6 bg-richblack-800/90 backdrop-blur-md rounded-full px-4 py-2 border border-richblack-600">
+                <span className="text-xs font-medium text-richblack-100 flex items-center gap-1">
+                  <svg className="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                  Premium
+                </span>
+              </div>
+              
+              {/* Play Button Overlay (appears on hover) */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-richblack-900/20 backdrop-blur-sm">
+                <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center border border-white/20 backdrop-blur-md hover:bg-white/20 transition-all duration-300 transform hover:scale-110">
+                  <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            {/* Bottom Reflection Effect */}
+            <div className="absolute -bottom-20 left-1/2 transform -translate-x-1/2 w-4/5 h-20 bg-gradient-to-t from-blue-500/5 via-purple-500/5 to-transparent rounded-full blur-2xl"></div>
+          </div>
+          
+          {/* Enhanced Description */}
+          <div className="text-center mt-12 space-y-4">
+            <div className="flex items-center justify-center gap-2 text-sm text-richblack-400 mb-2">
+              <div className="w-12 h-px bg-gradient-to-r from-transparent via-richblack-400 to-transparent"></div>
+              <span>Interactive Learning Experience</span>
+              <div className="w-12 h-px bg-gradient-to-r from-transparent via-richblack-400 to-transparent"></div>
+            </div>
+            <p className="text-base text-richblack-300 max-w-3xl mx-auto leading-relaxed">
+              Discover our cutting-edge learning platform where theory meets practice. Experience real-world coding environments, 
+              interactive projects, and personalized mentorship that adapts to your learning pace.
+            </p>
+            
+            {/* Feature Highlights */}
+            <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm">
+              <div className="flex items-center gap-2 text-richblack-400">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span>4K Video Quality</span>
+              </div>
+              <div className="flex items-center gap-2 text-richblack-400">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span>Interactive Content</span>
+              </div>
+              <div className="flex items-center gap-2 text-richblack-400">
+                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                <span>Live Coding Sessions</span>
+              </div>
+              <div className="flex items-center gap-2 text-richblack-400">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                <span>Expert Guidance</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div>
@@ -167,7 +258,7 @@ const Home = () => {
         <h1 className="text-center text-4xl font-semibold mt-8">
           Reviews from other learners
         </h1>
-        {/* <ReviewSlider /> */}
+        <ReviewSlider />
       </div>
 
       {/* section 4 */}
