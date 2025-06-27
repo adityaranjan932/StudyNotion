@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const otpGenerator = require("otp-generator");
 const OTP = require("../models/OTP");
 const Profile = require("../models/Profile");
+const mailSender = require("../utils/mailSender");
+const { passwordUpdated } = require("../mailsTemplates/passwordUpdate");
 require("dotenv").config();
 
 // send otp
@@ -247,21 +249,12 @@ exports.changePassword = async(req,res)=>{
             `Password updated successfully for ${updatedUserDetails.firstName} ${updatedUserDetails.lastName}`
           )
         )
-        console.log("Email sent successfully:", emailResponse.response)
+        console.log("Email sent successfully:", emailResponse?.messageId || emailResponse)
 
-    
-
-  }
-  catch(error){
-     // If there's an error sending the email, log the error and return a 500 (Internal Server Error) error
-     console.error("Error occurred while sending email:", error)
-     return res.status(500).json({
-       success: false,
-       message: "Error occurred while sending email",
-       error: error.message,
-     })
-   }
-
+    } catch (emailError) {
+      console.error("Error occurred while sending email:", emailError)
+      // Don't return error response here, just log it
+    }
 
     // Return success response
     return res
@@ -277,8 +270,3 @@ exports.changePassword = async(req,res)=>{
     })
   }
 }
-
-
-    
-
-

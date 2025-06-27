@@ -27,11 +27,13 @@ exports.resetPasswordToken = async (req,res) =>{
         }
     )
     //create url 
-    const url = `http://localhost:5173/update-password/${token}`
+    // Use environment variable for frontend URL or default to production
+    const frontendUrl = process.env.FRONTEND_URL || "https://study-notion-phi-five.vercel.app";
+    const url = `${frontendUrl}/update-password/${token}`
     //send mail constaining the url
     await mailSender(email,
         "Password Reset Link",
-        `password reset Link :${url}`
+        `Password reset Link: ${url}`
     );
     //return response 
     return res.json({

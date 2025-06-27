@@ -18,13 +18,12 @@ const mailSender = async (email,title,body) =>{
             html:`${body}`,
         })
         console.log(info);
+        return info; // Return the info object
 
     }
     catch(error){
         console.log(error.message);
-
-
+        throw error; // Throw error so it can be caught by calling function
     }
-
 }
 module.exports = mailSender;
