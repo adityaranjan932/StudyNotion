@@ -32,13 +32,13 @@ app.use(
     cors({
         origin: [
             "http://localhost:5173",
-            "https://study-notion-kh69rkkje-aditya-ranjans-projects-51ea4f23.vercel.app"
+            "https://study-notion-kh69rkkje-aditya-ranjans-projects-51ea4f23.vercel.app",
+            "https://study-notion-git-main-aditya-ranjans-projects-51ea4f23.vercel.app",
+            "https://study-notion-amber.vercel.app"
         ],
         credentials: true,
-    }
-
-
-));
+    })
+);
 app.use(
     fileUpload(
         {useTempFiles: true,
