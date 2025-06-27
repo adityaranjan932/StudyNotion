@@ -8,7 +8,7 @@ const courseRoutes = require('./routes/Course');
 const contactUsRoute = require("./routes/Contact");
 const chatBotRoutes = require("./routes/ChatBot");
 
-const database = require('./config/database');
+const database = require('./config/dataBase');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
