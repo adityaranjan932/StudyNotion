@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import Logo from "../../assets/Logo/Logo-Full-Light.png";
 
 // Icons
-import { FaFacebook, FaGoogle, FaTwitter, FaYoutube } from "react-icons/fa";
+import { FaLinkedin, FaGithub, FaTwitter, FaInstagram } from "react-icons/fa";
 
 const BottomFooter = ["Privacy Policy", "Cookie Policy", "Terms"];
 const Resources = [
@@ -47,10 +47,35 @@ const Footer = () => {
                 })}
               </div>
               <div className="flex gap-3 text-lg">
-                <FaFacebook />
-                <FaGoogle />
-                <FaTwitter />
-                <FaYoutube />
+                <a
+                  href="https://www.linkedin.com/in/aditya-ranjan-95770b244/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaLinkedin className="cursor-pointer hover:text-richblack-50 transition-all duration-200" />
+                </a>
+                <a
+                  href="https://github.com/adityaranjan932
+"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaGithub className="cursor-pointer hover:text-richblack-50 transition-all duration-200" />
+                </a>
+                <a
+                  href="https://twitter.com/your-username"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaTwitter className="cursor-pointer hover:text-richblack-50 transition-all duration-200" />
+                </a>
+                <a
+                  href="https://instagram.com/your-username"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaInstagram className="cursor-pointer hover:text-richblack-50 transition-all duration-200" />
+                </a>
               </div>
               <div></div>
             </div>
@@ -172,7 +197,9 @@ const Footer = () => {
             })}
           </div>
 
-          <div className="text-center">Made with ❤️ CodeHelp © 2025 Studynotion</div>
+          <div className="text-center">
+            Made by Maverick ❤️ © 2025 Studynotion
+          </div>
         </div>
       </div>
     </div>
