@@ -30,7 +30,10 @@ app.use(express.urlencoded({ extended: true })); //  Helps in parsing form data
 app.use(cookieParser());
 app.use(
     cors({
-        origin: "http://localhost:5173",  //ye react ki port hai jahan se request aayegi
+        origin: [
+            "http://localhost:5173",
+            "https://study-notion-kh69rkkje-aditya-ranjans-projects-51ea4f23.vercel.app"
+        ],
         credentials: true,
     }
 
