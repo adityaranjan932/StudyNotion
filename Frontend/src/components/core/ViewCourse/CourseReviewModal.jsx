@@ -7,7 +7,7 @@ import { useSelector } from "react-redux"
 import toast from "react-hot-toast"
 
 import { createRating } from "../../../services/operations/courseDetailsAPI"
-import IconBtn from "../../Common/IconBtn"
+import IconBtn from "../../common/IconBtn"
 import StarRating from "../../common/StarRating"
 
 export default function CourseReviewModal({ setReviewModal }) {
