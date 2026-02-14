@@ -167,7 +167,7 @@ Answer questions naturally and helpfully. If you don't know something specific, 
 
       console.log('Sending to AI:', requestBody); // Debug log
 
-      const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000/api/v1";
+      const BASE_URL = import.meta.env.VITE_BACKEND_URL;
       const response = await fetch(`${BASE_URL}/chat/message`, {
         method: 'POST',
         headers: {
@@ -342,8 +342,8 @@ Answer questions naturally and helpfully. If you don't know something specific, 
               >
                 <div
                   className={`max-w-xs px-4 py-3 rounded-lg text-sm transition-all duration-300 relative ${message.isBot
-                      ? 'bg-richblack-700 text-richblack-25 rounded-bl-none shadow-md'
-                      : 'bg-gradient-to-r from-yellow-50 to-yellow-100 text-richblack-900 rounded-br-none shadow-md'
+                    ? 'bg-richblack-700 text-richblack-25 rounded-bl-none shadow-md'
+                    : 'bg-gradient-to-r from-yellow-50 to-yellow-100 text-richblack-900 rounded-br-none shadow-md'
                     }`}
                   style={{
                     whiteSpace: 'pre-line',
@@ -390,8 +390,8 @@ Answer questions naturally and helpfully. If you don't know something specific, 
                       setMessages(prev => [...prev, welcomeMsg])
                     }}
                     className={`p-3 rounded-lg text-sm transition-all duration-300 border ${userType === 'student'
-                        ? 'bg-yellow-50 text-richblack-900 border-yellow-200'
-                        : 'bg-richblack-700 text-richblack-100 border-richblack-600 hover:border-yellow-50'
+                      ? 'bg-yellow-50 text-richblack-900 border-yellow-200'
+                      : 'bg-richblack-700 text-richblack-100 border-richblack-600 hover:border-yellow-50'
                       }`}
                   >
                     📚 I'm a Student
@@ -408,8 +408,8 @@ Answer questions naturally and helpfully. If you don't know something specific, 
                       setMessages(prev => [...prev, welcomeMsg])
                     }}
                     className={`p-3 rounded-lg text-sm transition-all duration-300 border ${userType === 'instructor'
-                        ? 'bg-yellow-50 text-richblack-900 border-yellow-200'
-                        : 'bg-richblack-700 text-richblack-100 border-richblack-600 hover:border-yellow-50'
+                      ? 'bg-yellow-50 text-richblack-900 border-yellow-200'
+                      : 'bg-richblack-700 text-richblack-100 border-richblack-600 hover:border-yellow-50'
                       }`}
                   >
                     🎓 I'm an Instructor
@@ -420,8 +420,8 @@ Answer questions naturally and helpfully. If you don't know something specific, 
                       setShowQuickQuestions(true)
                     }}
                     className={`p-3 rounded-lg text-sm transition-all duration-300 border ${userType === 'general'
-                        ? 'bg-yellow-50 text-richblack-900 border-yellow-200'
-                        : 'bg-richblack-700 text-richblack-100 border-richblack-600 hover:border-yellow-50'
+                      ? 'bg-yellow-50 text-richblack-900 border-yellow-200'
+                      : 'bg-richblack-700 text-richblack-100 border-richblack-600 hover:border-yellow-50'
                       }`}
                   >
                     ℹ️ General Questions
