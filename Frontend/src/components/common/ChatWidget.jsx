@@ -56,27 +56,27 @@ const ChatWidget = () => {
       "Are there any free courses?",
       "Technical support needed"
     ]
-    
+
     const studentQuestions = [
       "How to track my progress?",
       "Where are my certificates?",
       "How to download videos?",
       "Course completion requirements"
     ]
-    
+
     const instructorQuestions = [
       "How to create a course?",
       "Upload video guidelines",
       "Student analytics dashboard",
       "Earnings and payouts"
     ]
-    
+
     if (userType === 'student') {
       return [...baseQuestions, ...studentQuestions.slice(0, 4)]
     } else if (userType === 'instructor') {
       return [...baseQuestions, ...instructorQuestions]
     }
-    
+
     return [
       "How to enroll in a course?",
       "What payment methods do you accept?",
@@ -88,7 +88,7 @@ const ChatWidget = () => {
       "Refund policy"
     ]
   }
-  
+
   const quickQuestions = getQuickQuestions()
 
   const scrollToBottom = () => {
@@ -151,7 +151,7 @@ Answer questions naturally and helpfully. If you don't know something specific, 
     try {
       // Ensure userMessage is a clean string
       const cleanMessage = typeof userMessage === 'string' ? userMessage.trim() : String(userMessage || '').trim();
-      
+
       if (!cleanMessage) {
         throw new Error('Empty message');
       }
@@ -167,7 +167,8 @@ Answer questions naturally and helpfully. If you don't know something specific, 
 
       console.log('Sending to AI:', requestBody); // Debug log
 
-      const response = await fetch('http://localhost:4000/api/v1/chat/message', {
+      const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000/api/v1";
+      const response = await fetch(`${BASE_URL}/chat/message`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -180,7 +181,7 @@ Answer questions naturally and helpfully. If you don't know something specific, 
       }
 
       const data = await response.json()
-      
+
       if (data.success && data.response) {
         return {
           text: data.response,
@@ -188,7 +189,7 @@ Answer questions naturally and helpfully. If you don't know something specific, 
           model: data.model
         }
       }
-      
+
       throw new Error('Invalid response from AI service')
     } catch (error) {
       console.log('AI service error:', error)
@@ -204,7 +205,7 @@ Answer questions naturally and helpfully. If you don't know something specific, 
   const getResponse = async (userMessage) => {
     // Ensure userMessage is a string
     const message = typeof userMessage === 'string' ? userMessage : String(userMessage || '');
-    
+
     if (!message.trim()) {
       return {
         text: "Please ask me something! I'm here to help with any StudyNotion questions. 😊",
@@ -212,7 +213,7 @@ Answer questions naturally and helpfully. If you don't know something specific, 
         model: 'Input Validation'
       };
     }
-    
+
     // Always use AI - no fallbacks for better experience
     const result = await getAIResponse(message);
     return result;
@@ -238,11 +239,11 @@ Answer questions naturally and helpfully. If you don't know something specific, 
     try {
       // Get AI response
       const result = await getResponse(message)
-      
+
       // Simulate realistic typing delay based on response length
       const responseText = result.text || result
       const typingDelay = Math.min(Math.max(responseText.length * 30, 1000), 3000)
-      
+
       setTimeout(() => {
         const botResponse = {
           id: Date.now() + 1,
@@ -340,11 +341,10 @@ Answer questions naturally and helpfully. If you don't know something specific, 
                 className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
               >
                 <div
-                  className={`max-w-xs px-4 py-3 rounded-lg text-sm transition-all duration-300 relative ${
-                    message.isBot
+                  className={`max-w-xs px-4 py-3 rounded-lg text-sm transition-all duration-300 relative ${message.isBot
                       ? 'bg-richblack-700 text-richblack-25 rounded-bl-none shadow-md'
                       : 'bg-gradient-to-r from-yellow-50 to-yellow-100 text-richblack-900 rounded-br-none shadow-md'
-                  }`}
+                    }`}
                   style={{
                     whiteSpace: 'pre-line',
                     animation: 'slideIn 0.3s ease-out'
@@ -359,7 +359,7 @@ Answer questions naturally and helpfully. If you don't know something specific, 
                 </div>
               </div>
             ))})
-            
+
             {/* Typing indicator */}
             {isTyping && (
               <div className="flex justify-start">
@@ -372,7 +372,7 @@ Answer questions naturally and helpfully. If you don't know something specific, 
                 </div>
               </div>
             )}
-            
+
             {/* User Type Selection */}
             {messages.length <= 1 && (
               <div className="space-y-3 animate-fadeIn">
@@ -389,11 +389,10 @@ Answer questions naturally and helpfully. If you don't know something specific, 
                       }
                       setMessages(prev => [...prev, welcomeMsg])
                     }}
-                    className={`p-3 rounded-lg text-sm transition-all duration-300 border ${
-                      userType === 'student' 
-                        ? 'bg-yellow-50 text-richblack-900 border-yellow-200' 
+                    className={`p-3 rounded-lg text-sm transition-all duration-300 border ${userType === 'student'
+                        ? 'bg-yellow-50 text-richblack-900 border-yellow-200'
                         : 'bg-richblack-700 text-richblack-100 border-richblack-600 hover:border-yellow-50'
-                    }`}
+                      }`}
                   >
                     📚 I'm a Student
                   </button>
@@ -408,11 +407,10 @@ Answer questions naturally and helpfully. If you don't know something specific, 
                       }
                       setMessages(prev => [...prev, welcomeMsg])
                     }}
-                    className={`p-3 rounded-lg text-sm transition-all duration-300 border ${
-                      userType === 'instructor' 
-                        ? 'bg-yellow-50 text-richblack-900 border-yellow-200' 
+                    className={`p-3 rounded-lg text-sm transition-all duration-300 border ${userType === 'instructor'
+                        ? 'bg-yellow-50 text-richblack-900 border-yellow-200'
                         : 'bg-richblack-700 text-richblack-100 border-richblack-600 hover:border-yellow-50'
-                    }`}
+                      }`}
                   >
                     🎓 I'm an Instructor
                   </button>
@@ -421,18 +419,17 @@ Answer questions naturally and helpfully. If you don't know something specific, 
                       setUserType('general')
                       setShowQuickQuestions(true)
                     }}
-                    className={`p-3 rounded-lg text-sm transition-all duration-300 border ${
-                      userType === 'general' 
-                        ? 'bg-yellow-50 text-richblack-900 border-yellow-200' 
+                    className={`p-3 rounded-lg text-sm transition-all duration-300 border ${userType === 'general'
+                        ? 'bg-yellow-50 text-richblack-900 border-yellow-200'
                         : 'bg-richblack-700 text-richblack-100 border-richblack-600 hover:border-yellow-50'
-                    }`}
+                      }`}
                   >
                     ℹ️ General Questions
                   </button>
                 </div>
               </div>
             )}
-            
+
             {/* Quick Questions */}
             {showQuickQuestions && messages.length > 1 && userType !== 'general' && (
               <div className="space-y-2 animate-fadeIn">
@@ -453,7 +450,7 @@ Answer questions naturally and helpfully. If you don't know something specific, 
                 </div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
 
