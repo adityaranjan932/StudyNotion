@@ -1,7 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-// Initialize Gemini AI (free alternative to OpenAI)
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// StudyNotion AI ChatBot using Groq (Free, no billing needed)
 
 // StudyNotion platform context - Comprehensive knowledge base
 const STUDYNOTION_CONTEXT = `
@@ -69,7 +66,6 @@ TECHNICAL DETAILS:
 - Built with: React.js (Frontend), Node.js/Express (Backend)
 - Database: MongoDB with Mongoose ODM
 - File Storage: Cloudinary for videos and images
-- Email: Nodemailer with Gmail SMTP
 - Styling: Tailwind CSS with custom yellow/black theme
 
 SUPPORT & HELP:
@@ -102,69 +98,75 @@ exports.getChatResponse = async (req, res) => {
     // Clean the message
     userMessage = userMessage.trim();
 
-    // Prepare the conversation context
-    let conversationContext = STUDYNOTION_CONTEXT;
-    
+    // Prepare the system prompt
+    let systemPrompt = STUDYNOTION_CONTEXT;
+
     if (userType === 'student') {
-      conversationContext += "\n\nThe user is a STUDENT. Focus on student features like course enrollment, dashboard navigation (/dashboard/enrolled-courses), progress tracking, certificates, and learning experience.";
+      systemPrompt += "\n\nThe user is a STUDENT. Focus on student features like course enrollment, dashboard navigation (/dashboard/enrolled-courses), progress tracking, certificates, and learning experience.";
     } else if (userType === 'instructor') {
-      conversationContext += "\n\nThe user is an INSTRUCTOR. Focus on instructor features like course creation (/dashboard/add-course), analytics (/dashboard/instructor), student management, and earnings.";
+      systemPrompt += "\n\nThe user is an INSTRUCTOR. Focus on instructor features like course creation (/dashboard/add-course), analytics (/dashboard/instructor), student management, and earnings.";
     }
 
-    // Add conversation history for context
+    // Build messages array for Groq (OpenAI-compatible format)
+    const messages = [
+      { role: "system", content: systemPrompt }
+    ];
+
+    // Add conversation history
     if (conversationHistory.length > 0) {
-      conversationContext += "\n\nRecent conversation:\n";
       conversationHistory.slice(-3).forEach(msg => {
         if (msg && msg.text) {
-          conversationContext += `${msg.isBot ? 'Assistant' : 'User'}: ${msg.text}\n`;
+          messages.push({
+            role: msg.isBot ? "assistant" : "user",
+            content: msg.text
+          });
         }
       });
     }
 
-    // Always try AI first - no fallbacks for better responses
+    // Add current user message
+    messages.push({ role: "user", content: userMessage });
+
+    // Call Groq API (OpenAI-compatible, no SDK needed)
     try {
-      // Try the latest stable model names
-      let model;
-      try {
-        model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      } catch (error1) {
-        console.log('gemini-1.5-flash failed, trying gemini-1.5-pro:', error1.message);
-        try {
-          model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-        } catch (error2) {
-          console.log('gemini-1.5-pro failed, trying gemini-pro:', error2.message);
-          try {
-            model = genAI.getGenerativeModel({ model: "gemini-pro" });
-          } catch (error3) {
-            console.log('gemini-pro failed, trying models/gemini-pro:', error3.message);
-            model = genAI.getGenerativeModel({ model: "models/gemini-pro" });
-          }
-        }
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: messages,
+          max_tokens: 1024,
+          temperature: 0.7
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        console.log("Groq API error:", data.error);
+        throw new Error(data.error.message || "Groq API error");
       }
-      
-      const prompt = `${conversationContext}\n\nUser Question: "${userMessage}"\n\nProvide a helpful, detailed response about StudyNotion. Include specific navigation paths, exact steps, and comprehensive information. Be conversational and helpful. Answer general questions too if they're not platform-specific.`;
-      
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const aiResponse = response.text();
+
+      const aiResponse = data.choices?.[0]?.message?.content;
 
       if (aiResponse && aiResponse.trim()) {
         return res.status(200).json({
           success: true,
           response: aiResponse.trim(),
           isAI: true,
-          model: 'Gemini AI'
+          model: 'Groq Llama 3.3'
         });
       }
-    } catch (geminiError) {
-      console.log('Gemini AI error details:', {
-        message: geminiError.message,
-        stack: geminiError.stack,
-        status: geminiError.status,
-        code: geminiError.code
+    } catch (groqError) {
+      console.log('Groq AI error details:', {
+        message: groqError.message,
+        status: groqError.status
       });
-      
-      // If AI fails, provide a helpful error message
+
+      // If AI fails, provide a helpful fallback
       return res.status(200).json({
         success: true,
         response: "I'm having trouble connecting to my AI brain right now 🧠 But I'm still here to help! Could you please rephrase your question? For immediate assistance, email support@studynotion.com or try asking about specific StudyNotion features like course enrollment, dashboard navigation, or payment methods.",
@@ -173,7 +175,7 @@ exports.getChatResponse = async (req, res) => {
       });
     }
 
-    // This shouldn't happen, but just in case
+    // Fallback
     return res.status(200).json({
       success: true,
       response: "I'm here to help with any StudyNotion questions! Ask me about course enrollment, dashboard features, payment methods, or anything else about the platform.",
@@ -198,11 +200,11 @@ exports.getChatHealth = async (req, res) => {
       success: true,
       message: "StudyNotion AI Assistant is running",
       timestamp: new Date().toISOString(),
-      aiAvailable: !!process.env.GEMINI_API_KEY,
-      model: 'Gemini 1.5 Flash',
+      aiAvailable: !!process.env.GROQ_API_KEY,
+      model: 'Groq Llama 3.3 70B',
       capabilities: [
         'Complete StudyNotion platform knowledge',
-        'Student and Instructor dashboard guidance', 
+        'Student and Instructor dashboard guidance',
         'Course enrollment and payment assistance',
         'Navigation and feature explanations',
         'General questions and conversation'

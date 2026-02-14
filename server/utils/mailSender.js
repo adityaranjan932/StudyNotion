@@ -1,29 +1,30 @@
-const nodemailer = require("nodemailer");
+const SibApiV3Sdk = require("sib-api-v3-sdk");
 
-const mailSender = async (email,title,body) =>{
-    try{
-        let transporter = nodemailer.createTransport({
-            host:process.env.MAIL_HOST,
-            auth:{
-                user:process.env.MAIL_USER,
-                pass:process.env.MAIL_PASS,
-            }
+const mailSender = async (email, title, body) => {
+    try {
+        // Configure Brevo API key
+        const defaultClient = SibApiV3Sdk.ApiClient.instance;
+        const apiKey = defaultClient.authentications["api-key"];
+        apiKey.apiKey = process.env.BREVO_API_KEY;
 
-        })
+        const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
-        let info = await transporter.sendMail({
-            from:'StudyNotion || CodeHelp - by Ranjan',
-            to:`${email}`,
-            subject:`${title}`,
-            html:`${body}`,
-        })
-        console.log(info);
-        return info; // Return the info object
+        const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+        sendSmtpEmail.sender = {
+            name: "StudyNotion",
+            email: process.env.MAIL_USER,
+        };
+        sendSmtpEmail.to = [{ email: email }];
+        sendSmtpEmail.subject = title;
+        sendSmtpEmail.htmlContent = body;
 
+        const info = await apiInstance.sendTransacEmail(sendSmtpEmail);
+        console.log("Email sent successfully:", info);
+        return info;
+    } catch (error) {
+        console.log("Error sending email:", error.message);
+        throw error;
     }
-    catch(error){
-        console.log(error.message);
-        throw error; // Throw error so it can be caught by calling function
-    }
-}
+};
+
 module.exports = mailSender;
